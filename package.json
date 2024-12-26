@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node public/server.bundle.js",
     "dev": "nodemon app.js",
-    "build": "webpack --config webpack.config.js"
+    "build": "npx webpack --config webpack.config.js"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +25,7 @@
     "@babel/preset-env": "^7.26.0",
     "babel-loader": "^9.2.1",
     "webpack": "^5.97.1",
-    "webpack-cli": "^6.0.1"
+    "webpack-cli": "^6.0.1",
+    "webpack-node-externals": "^3.0.0"
   }
 }

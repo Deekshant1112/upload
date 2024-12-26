@@ -3,51 +3,42 @@
 
 
 
+
+
+
+
+
+
+
+
 const express = require('express');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
-const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const cors = require('cors');
-app.use(express.static(path.join(__dirname, 'public'))); 
 
-// const allowedOrigins = [
-//   'https://newsite-feb0.onrender.com/',   // Development
-//   'http://127.0.0.1:5500/' // Production Frontend URL
-// ];
+// Serve static files from the "public" folder (frontend files like HTML, JS, etc.)
+app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
-}));
-
-
-// Multer Setup for Handling Image Uploads
+// Multer setup for handling file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Save images to 'uploads' folder
+    const uploadPath = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath); // Create 'uploads' directory if it doesn't exist
+    }
+    cb(null, uploadPath); // Save images to the 'uploads' folder
   },
   filename: (req, file, cb) => {
-    cb(null, `screenshot-${Date.now()}.png`);
+    cb(null, `screenshot-${Date.now()}.png`); // File name with timestamp
   }
 });
 
 const upload = multer({ storage });
 
-// Ensure 'uploads' directory exists
-if (!fs.existsSync('uploads')) {
-  fs.mkdirSync('uploads');
-}
-
-// POST Endpoint to Handle Screenshot Upload and Send via Email
+// POST endpoint to handle image upload and send via email
 app.post('/api/send-email', upload.single('screenshot'), async (req, res) => {
   try {
     if (!req.file) {
@@ -56,7 +47,6 @@ app.post('/api/send-email', upload.single('screenshot'), async (req, res) => {
 
     const screenshotPath = path.join(__dirname, 'uploads', req.file.filename);
 
-    // Configure Nodemailer
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -81,10 +71,11 @@ app.post('/api/send-email', upload.single('screenshot'), async (req, res) => {
       }]
     };
 
+    // Send email with the screenshot as an attachment
     await transporter.sendMail(mailOptions);
     console.log('✅ Email sent successfully with screenshot!');
 
-    // Clean up uploaded file after sending
+    // Clean up the uploaded file after sending the email
     fs.unlinkSync(screenshotPath);
 
     res.status(200).json({ message: 'Screenshot sent successfully!' });
@@ -93,12 +84,13 @@ app.post('/api/send-email', upload.single('screenshot'), async (req, res) => {
     res.status(500).json({ message: 'Failed to send email.', error: error.toString() });
   }
 });
-// Serve the frontend index.html for any unknown routes
+
+// Serve the frontend index.html for any unknown routes (handling frontend routes)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'script.html')); // Ensure this is correct path for your HTML file
 });
 
-// Start the Server
+// Start the server
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
