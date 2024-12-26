@@ -11,7 +11,23 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-app.use(cors());
+const cors = require('cors');
+
+const allowedOrigins = [
+  'https://downloads-ls0q.onrender.com',   // Development
+  'http://127.0.0.1:5500/' // Production Frontend URL
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+}));
+
 
 // Multer Setup for Handling Image Uploads
 const storage = multer.diskStorage({
