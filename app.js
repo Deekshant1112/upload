@@ -12,11 +12,12 @@ const path = require('path');
 
 const app = express();
 const cors = require('cors');
+app.use(express.static(path.join(__dirname, 'public'))); 
 
-const allowedOrigins = [
-  'https://downloads-ls0q.onrender.com',   // Development
-  'http://127.0.0.1:5500/' // Production Frontend URL
-];
+// const allowedOrigins = [
+//   'https://newsite-feb0.onrender.com/',   // Development
+//   'http://127.0.0.1:5500/' // Production Frontend URL
+// ];
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -91,6 +92,10 @@ app.post('/api/send-email', upload.single('screenshot'), async (req, res) => {
     console.error('❌ Failed to send email:', error);
     res.status(500).json({ message: 'Failed to send email.', error: error.toString() });
   }
+});
+// Serve the frontend index.html for any unknown routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Start the Server
